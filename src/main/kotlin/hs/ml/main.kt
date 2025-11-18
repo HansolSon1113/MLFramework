@@ -27,20 +27,24 @@ fun main() {
         input = scanner.nextInt()
     } while (input != 1 && input != 2)
 
+    var importer: DataImporter
     do {
-        var importer: DataImporter
         if (input == 1) {
             print("CSV 파일 경로 : ")
             val path = scanner.nextLine()
             importer = CsvImporter(path)
         } else {
+            print("데이터 개수 : ")
+            val n = scanner.nextInt()
             print("기울기 : ")
             val slope = scanner.nextDouble()
             print("절편 : ")
             val bias = scanner.nextDouble()
             print("노이즈 : ")
             val noise = scanner.nextDouble()
-            importer = LinearDataGenerator(slope, bias, noise)
+            importer = LinearDataGenerator(n, slope, bias, noise)
         }
     } while (!importer.available())
+
+    println(importer.read())
 }

@@ -8,16 +8,24 @@ class Tensor(val row: Int, val col: Int) {
     constructor(row: Int, col: Int, value: Double): this(row, col) {
         for (i in 0..<this.row)
             for (j in 0..<this.col)
-                this[i][j] = value
+                this[i, j] = value
+    }
+
+    constructor(row: Int, col: Int, value: (Int, Int) -> Double): this(row, col) {
+        for (i in 0..<this.row)
+            for (j in 0..<this.col)
+                this[i, j] = value(i, j)
     }
 
     operator fun get(idx: Int) = data[idx]
+    operator fun get(i: Int, j: Int) = data[i][j]
+    operator fun set(i: Int, j: Int, v: Double) { data[i][j] = v }
 
     operator fun unaryMinus(): Tensor {
         val tensor = Tensor(this.row, this.col)
         for (i in 0..<this.row)
             for (j in 0..<this.col)
-                tensor[i][j] = -this[i][j]
+                tensor[i, j] = -this[i, j]
         return tensor
     }
 
@@ -28,7 +36,7 @@ class Tensor(val row: Int, val col: Int) {
         val ans = Tensor(this.row, this.col)
         for (i in 0..<this.row)
             for (j in 0..<this.col)
-                ans[i][j] = this[i][j] + tensor[i][j]
+                ans[i, j] = this[i][j] + tensor[i, j]
 
         return ans
     }
@@ -40,7 +48,7 @@ class Tensor(val row: Int, val col: Int) {
         val ans = Tensor(this.row, this.col)
         for (i in 0..<this.row)
             for (j in 0..<this.col)
-                ans[i][j] = this[i][j] - tensor[i][j]
+                ans[i, j] = this[i, j] - tensor[i, j]
 
         return ans
     }
@@ -54,8 +62,8 @@ class Tensor(val row: Int, val col: Int) {
             for (j in 0 until tensor.col) {
                 var sum = 0.0
                 for (k in 0 until this.col)
-                    sum += this[i][k] * tensor[k][j]
-                ans[i][j] = sum
+                    sum += this[i, k] * tensor[k, j]
+                ans[i, j] = sum
             }
         }
         return ans
@@ -65,7 +73,7 @@ class Tensor(val row: Int, val col: Int) {
         val tensor = Tensor(this.col, this.row)
         for (i in 0..<this.row)
             for (j in 0..<this.col)
-                tensor[j][i] = this[i][j]
+                tensor[j, i] = this[i, j]
 
         return tensor
     }
@@ -74,7 +82,7 @@ class Tensor(val row: Int, val col: Int) {
         val builder = StringBuilder()
         for (i in 0..<this.row) {
             for (j in 0..<this.col)
-                builder.append("${this[i][j]},\t")
+                builder.append("${this[i, j]},\t")
             builder.append("\n")
         }
 
