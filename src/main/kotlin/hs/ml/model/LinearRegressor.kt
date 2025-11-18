@@ -20,8 +20,6 @@ class LinearRegressor: Model {
             val yhat = predict(x)
             val errors = Tensor(y.row, 1) { i, j -> yhat[i, j] - y[i, j] }
 
-            println("Epoch ${epoch + 1}/$epochs - Loss: ${Evaluator.mse(y, yhat)}")
-
             // 가중치와 편향 업데이트
             for (j in 0 until x.col) {
                 var gradient = 0.0

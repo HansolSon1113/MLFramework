@@ -37,5 +37,20 @@ class Evaluator {
 
             return sum / (y.row * y.col)
         }
+
+        fun r2(y: Tensor, yhat: Tensor): Double {
+            val mean = (0 until y.row).sumOf { y[it, 0] } / y.row
+            var ssTot = 0.0
+            var ssRes = 0.0
+
+            for (i in 0 until y.row) {
+                val yi = y[i, 0]
+                val yhi = yhat[i, 0]
+                ssTot += (yi - mean) * (yi - mean)
+                ssRes += (yi - yhi) * (yi - yhi)
+            }
+
+            return 1 - (ssRes / ssTot)
+        }
     }
 }

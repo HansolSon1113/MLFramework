@@ -61,9 +61,12 @@ fun main() {
 
     val model = LinearRegressor()
     println("모델 학습중...")
-    model.fit(x, y, epochs = 100, lr = 0.01)
+    model.fit(x, y, epochs = 1000, lr = 0.001)
     println("모델 학습 완료!")
     println(model)
     val score = model.evaluate(x, y, Evaluator::mse)
+    val r2 = model.evaluate(x, y, Evaluator::r2)
     println("모델 평가 점수 (MSE) : $score")
+    println("모델 평가 점수 (R2) : $r2")
+    println("")
 }
