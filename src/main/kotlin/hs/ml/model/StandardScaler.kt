@@ -37,6 +37,20 @@ class StandardScaler : Scaler {
         fitted = true
     }
 
+    //수정 필요
+    override var weights: Tensor
+        get() = TODO("Not yet implemented")
+        set(value) {}
+    override var bias: Double
+        get() = TODO("Not yet implemented")
+        set(value) {}
+    override var scaler: Scaler
+        get() = TODO("Not yet implemented")
+        set(value) {}
+    override var epoch: Int
+        get() = TODO("Not yet implemented")
+        set(value) {}
+
     override fun predict(x: Tensor): Tensor {
         require(fitted) { "StandardScaler is not fitted yet" }
         require(x.col == mean.col) { "Column size mismatch" }

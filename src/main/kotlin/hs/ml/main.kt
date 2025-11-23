@@ -5,6 +5,8 @@ import hs.ml.importer.DataImporter
 import hs.ml.importer.LinearDataGenerator
 import hs.ml.model.Evaluator
 import hs.ml.model.LinearRegressor
+import hs.ml.train.Derivatives.Companion.mse
+import hs.ml.train.Trainer
 import hs.ml.util.formatBytes
 import java.io.File
 import java.util.Scanner
@@ -60,8 +62,9 @@ fun main() {
     // TODO : Model Selection
 
     val model = LinearRegressor()
+    val trainer = Trainer(model, mse)
     println("모델 학습중...")
-    model.fit(x, y, epochs = 1000, lr = 0.001)
+    trainer.fit(x, y, epochs = 1000, lr = 0.001)
     println("모델 학습 완료!")
     println(model)
 

@@ -3,7 +3,13 @@ package hs.ml.model
 import hs.ml.data.Tensor
 
 interface Model {
-    fun fit(x: Tensor, y: Tensor, epochs: Int, lr: Double)
+    var weights: Tensor
+    var bias: Double
+    var scaler: Scaler
+    var epoch: Int
+//    var isTrained: Boolean
+//        get() = epoch > 0
+
     fun predict(x: Tensor): Tensor
 
     fun evaluate(x: Tensor, y: Tensor, metric: (Tensor, Tensor) -> Double): Double {

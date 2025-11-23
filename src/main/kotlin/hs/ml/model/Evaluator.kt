@@ -21,7 +21,7 @@ class Evaluator {
             return sum / (y.row * y.col)
         }
 
-        fun binaryCrossEntropy(y: Tensor, yhat: Tensor): Double {
+        fun bce(y: Tensor, yhat: Tensor): Double {
             require(y.row == yhat.row && y.col == yhat.col) {
                 "y와 yhat의 크기가 일치하지 않습니다."
             }
