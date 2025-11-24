@@ -1,6 +1,7 @@
 package hs.ml.model
 
-import hs.ml.data.Tensor
+import hs.ml.math.Tensor
+import hs.ml.scaler.Scaler
 
 interface Model {
     var weights: Tensor

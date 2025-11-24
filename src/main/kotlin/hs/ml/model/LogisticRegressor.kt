@@ -1,6 +1,7 @@
 package hs.ml.model
 
-import hs.ml.data.Tensor
+import hs.ml.math.Tensor
+import hs.ml.scaler.Scaler
 import kotlin.math.exp
 
 class LogisticRegressor : Model {

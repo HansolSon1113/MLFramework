@@ -3,7 +3,7 @@ package hs.ml
 import hs.ml.importer.CsvImporter
 import hs.ml.importer.DataImporter
 import hs.ml.importer.LinearDataGenerator
-import hs.ml.model.Evaluator
+import hs.ml.metric.Evaluator
 import hs.ml.model.LinearRegressor
 import hs.ml.train.Derivatives.Companion.mse
 import hs.ml.train.Trainer

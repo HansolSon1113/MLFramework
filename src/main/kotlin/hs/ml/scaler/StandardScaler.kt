@@ -1,6 +1,6 @@
-package hs.ml.model
+package hs.ml.scaler
 
-import hs.ml.data.Tensor
+import hs.ml.math.Tensor
 import kotlin.math.sqrt
 
 class StandardScaler : Scaler {

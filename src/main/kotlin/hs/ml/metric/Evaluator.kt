@@ -1,7 +1,8 @@
-package hs.ml.model
+package hs.ml.metric
 
-import hs.ml.data.Tensor
+import hs.ml.math.Tensor
 import kotlin.math.ln
+import kotlin.math.sqrt
 
 class Evaluator {
     companion object {
@@ -39,7 +40,7 @@ class Evaluator {
         }
 
         fun rmse(y: Tensor, yhat: Tensor): Double {
-            return kotlin.math.sqrt(mse(y, yhat))
+            return sqrt(mse(y, yhat))
         }
 
         fun r2(y: Tensor, yhat: Tensor): Double {

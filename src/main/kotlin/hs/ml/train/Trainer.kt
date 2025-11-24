@@ -1,8 +1,8 @@
 package hs.ml.train
 
-import hs.ml.data.Tensor
+import hs.ml.math.Tensor
 import hs.ml.model.Model
-import hs.ml.model.StandardScaler
+import hs.ml.scaler.StandardScaler
 
 class Trainer {
     val model: Model

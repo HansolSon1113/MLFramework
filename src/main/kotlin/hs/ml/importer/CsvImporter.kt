@@ -1,6 +1,6 @@
 package hs.ml.importer
 
-import hs.ml.data.Tensor
+import hs.ml.math.Tensor
 import java.io.File
 
 class CsvImporter(val path: String): DataImporter {

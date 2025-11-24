@@ -1,6 +1,7 @@
-package hs.ml.model
+package hs.ml.scaler
 
-import hs.ml.data.Tensor
+import hs.ml.math.Tensor
+import hs.ml.model.Model
 
 
 interface Scaler: Model {

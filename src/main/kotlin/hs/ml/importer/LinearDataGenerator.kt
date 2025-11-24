@@ -1,6 +1,6 @@
 package hs.ml.importer
 
-import hs.ml.data.Tensor
+import hs.ml.math.Tensor
 
 class LinearDataGenerator(
     val n: Int,

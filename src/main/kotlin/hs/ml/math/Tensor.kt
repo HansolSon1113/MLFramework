@@ -1,4 +1,4 @@
-package hs.ml.data
+package hs.ml.math
 
 class Tensor(val row: Int, val col: Int) {
     val data = MutableList(row) { MutableList(col) { 0.0 } }
