@@ -43,6 +43,15 @@ class Tensor(val row: Int, val col: Int) {
         return ans
     }
 
+    operator fun plus(v: Double): Tensor {
+        val ans = Tensor(this.row, this.col)
+        for (i in 0..<this.row)
+            for (j in 0..<this.col)
+                ans[i, j] = this[i][j] + v
+
+        return ans
+    }
+
     operator fun minus(tensor: Tensor): Tensor {
         if (this.row != tensor.row || this.col != tensor.col)
             throw IllegalArgumentException("크기가 다른 두 행렬을 더할 수 없습니다.")
@@ -78,6 +87,26 @@ class Tensor(val row: Int, val col: Int) {
                 tensor[j, i] = this[i, j]
 
         return tensor
+    }
+
+    fun max(): Double {
+        var ans = Double.MIN_VALUE;
+        for (i in 0 until this.row)
+            for (j in 0 until this.col)
+                if (ans < this[i, j])
+                    ans = this[i, j]
+
+        return ans
+    }
+
+    fun min(): Double {
+        var ans = Double.MAX_VALUE;
+        for (i in 0 until this.row)
+            for (j in 0 until this.col)
+                if (ans > this[i, j])
+                    ans = this[i, j]
+
+        return ans
     }
 
     override fun toString(): String {

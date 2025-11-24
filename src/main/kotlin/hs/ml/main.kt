@@ -3,10 +3,6 @@ package hs.ml
 import hs.ml.importer.CsvImporter
 import hs.ml.importer.DataImporter
 import hs.ml.importer.LinearDataGenerator
-import hs.ml.metric.Evaluator
-import hs.ml.model.LinearRegressor
-import hs.ml.train.Derivatives.Companion.mse
-import hs.ml.train.Trainer
 import hs.ml.util.formatBytes
 import java.io.File
 import java.util.Scanner
@@ -60,17 +56,4 @@ fun main() {
 
     println("**모델 선택 단계**")
     // TODO : Model Selection
-
-    val model = LinearRegressor()
-    val trainer = Trainer(model, mse)
-    println("모델 학습중...")
-    trainer.fit(x, y, epochs = 1000, lr = 0.001)
-    println("모델 학습 완료!")
-    println(model)
-
-    val rmse = model.evaluate(x, y, Evaluator::rmse)
-    val r2 = model.evaluate(x, y, Evaluator::r2)
-    println("모델 평가 점수 (RMSE) : $rmse")
-    println("모델 평가 점수 (R2) : $r2")
-    println("")
 }

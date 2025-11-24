@@ -3,78 +3,53 @@ package hs.ml.scaler
 import hs.ml.math.Tensor
 import kotlin.math.sqrt
 
-class StandardScaler : Scaler {
+class StandardScaler : Scaler() {
     private lateinit var mean: Tensor
     private lateinit var std: Tensor
-    private var fitted = false
 
     override fun fit(x: Tensor, y: Tensor, epochs: Int, lr: Double) {
-        // 평균 계산 (각 column 단위)
-        mean = Tensor(1, x.col)
-        std = Tensor(1, x.col)
-
-        for (j in 0 until x.col) {
-            var s = 0.0
+        val cols = x.col
+        mean = Tensor(1, cols) { j, _ ->
+            var sum = 0.0
             for (i in 0 until x.row) {
-                s += x[i, j]
+                sum += x[i, j]
             }
-            mean[0, j] = s / x.row
+            sum / x.row
         }
 
-        // 표준편차 계산
-        for (j in 0 until x.col) {
-            var acc = 0.0
+        std = Tensor(1, cols) { j, _ ->
+            var sumSq = 0.0
             for (i in 0 until x.row) {
                 val diff = x[i, j] - mean[0, j]
-                acc += diff * diff
+                sumSq += diff * diff
             }
-            std[0, j] = sqrt(acc / x.row)
-
-            // 혹시 std가 0이면 division-by-zero 방지
-            if (std[0, j] == 0.0) std[0, j] = 1e-8
+            sqrt(sumSq / x.row)
         }
 
-        fitted = true
+        isTrained = true
     }
 
-    //수정 필요
-    override var weights: Tensor
-        get() = TODO("Not yet implemented")
-        set(value) {}
-    override var bias: Double
-        get() = TODO("Not yet implemented")
-        set(value) {}
-    override var scaler: Scaler
-        get() = TODO("Not yet implemented")
-        set(value) {}
-    override var epoch: Int
-        get() = TODO("Not yet implemented")
-        set(value) {}
+    override fun transform(x: Tensor): Tensor {
+        require(isTrained) { "Scaler가 학습되지 않았습니다. fit 메서드를 먼저 호출하세요." }
 
-    override fun predict(x: Tensor): Tensor {
-        require(fitted) { "StandardScaler is not fitted yet" }
-        require(x.col == mean.col) { "Column size mismatch" }
-
-        val out = Tensor(x.row, x.col)
-
-        for (i in 0 until x.row) {
-            for (j in 0 until x.col) {
-                out[i, j] = (x[i, j] - mean[0, j]) / std[0, j]
+        val result = Tensor(x.row, x.col) { i, j ->
+            if (std[0, j] != 0.0) {
+                (x[i, j] - mean[0, j]) / std[0, j]
+            } else {
+                0.0
             }
         }
 
-        return out
+        return result
     }
 
-    override fun inverseTransform(x: Tensor): Tensor {
-        require(fitted) { "StandardScaler is not fitted yet" }
+    override fun inverse(x: Tensor): Tensor {
+        require(isTrained) { "Scaler가 학습되지 않았습니다. fit 메서드를 먼저 호출하세요." }
 
-        val out = Tensor(x.row, x.col)
-        for (i in 0 until x.row) {
-            for (j in 0 until x.col) {
-                out[i, j] = x[i, j] * std[0, j] + mean[0, j]
-            }
+        val result = Tensor(x.row, x.col) { i, j ->
+            x[i, j] * std[0, j] + mean[0, j]
         }
-        return out
+
+        return result
     }
 }

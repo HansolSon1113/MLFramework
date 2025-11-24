@@ -1,20 +1,12 @@
 package hs.ml.model
 
 import hs.ml.math.Tensor
-import hs.ml.scaler.Scaler
 
-interface Model {
-    var weights: Tensor
-    var bias: Double
-    var scaler: Scaler
-    var epoch: Int
-//    var isTrained: Boolean
-//        get() = epoch > 0
+abstract class Model {
+    abstract var weights: Tensor
+    abstract var bias: Double
+    var param: ModelParameter = ModelParameter()
+    var isTrained: Boolean = false
 
-    fun predict(x: Tensor): Tensor
-
-    fun evaluate(x: Tensor, y: Tensor, metric: (Tensor, Tensor) -> Double): Double {
-        val yhat = predict(x)
-        return metric(y, yhat)
-    }
+    abstract fun forward(x: Tensor): Tensor
 }
