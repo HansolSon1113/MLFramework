@@ -7,5 +7,5 @@ import hs.ml.scaler.Scaler
 data class ModelParameter(
     var scaler: Scaler? = null,
     var loss: Loss? = null,
-    var metric: Metric? = null
+    var metric: MutableList<Metric> = mutableListOf()
 )

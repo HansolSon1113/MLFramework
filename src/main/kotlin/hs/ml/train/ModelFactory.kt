@@ -37,8 +37,8 @@ class ModelFactory<T: Model>(
         return this
     }
 
-    fun setMetric(metric: Metric): ModelFactory<T> {
-        param.metric = metric
+    fun addMetric(metric: Metric): ModelFactory<T> {
+        param.metric.add(metric)
         return this
     }
 

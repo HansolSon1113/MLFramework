@@ -63,7 +63,7 @@ fun main() {
     val model = ModelFactory.create<LinearRegressor>()
         .setScaler(StandardScaler())
 //        .setLoss(())
-        .setMetric(RootMeanSquaredError())
+        .addMetric(RootMeanSquaredError())
         .getModel()
     // TODO : Model Selection
 }
