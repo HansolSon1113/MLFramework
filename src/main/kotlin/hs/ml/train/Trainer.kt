@@ -3,19 +3,23 @@ package hs.ml.train
 import hs.ml.math.Tensor
 import hs.ml.model.Model
 import hs.ml.scaler.StandardScaler
+import hs.ml.train.optimizer.Optimizer
+import hs.ml.train.optimizer.SGD
 
 class Trainer {
     val model: Model
     val grad: (Double) -> Double
+    val optim: Optimizer
 
-    constructor(model: Model, grad: (Double) -> Double) {
+    constructor(model: Model, grad: (Double) -> Double, optim: Optimizer = SGD()) {
         this.model = model
         this.grad = grad
+        this.optim = optim
     }
 
     companion object {
         inline fun <reified T : Model> create(noinline grad: (Double) -> Double): Trainer {
-            val model = ModelFactory.makeModel<T>()
+            val model = ModelFactory.create<T>().getModel()
             return Trainer(model, grad)
         }
     }

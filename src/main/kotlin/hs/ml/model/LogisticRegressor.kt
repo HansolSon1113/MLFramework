@@ -30,5 +30,5 @@ class LogisticRegressor : Classifier() {
         return predictions
     }
 
-    override fun toString(): String = "LinearRegressor(weights=$weights, bias=$bias, isTrained=$isTrained)"
+    override fun toString(): String = "LogisticRegressor(weights=$weights, bias=$bias, isTrained=$isTrained)"
 }
