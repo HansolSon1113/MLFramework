@@ -1,10 +1,11 @@
 package hs.ml.importer
 
+import hs.ml.data.DataBatch
 import hs.ml.math.Tensor
 import java.io.File
 
 class CsvImporter(val path: String): DataImporter {
-    override fun read(): Pair<Tensor, Tensor> {
+    override fun read(): DataBatch {
         val file = File(path)
         val lines = file.readLines()
         val data = lines.map { it.split(",").map {
@@ -23,7 +24,7 @@ class CsvImporter(val path: String): DataImporter {
             y[i, 0] = data[i][col - 1]
         }
 
-        return Pair(x, y)
+        return DataBatch(x, y)
     }
 
     override fun available(): Boolean {
