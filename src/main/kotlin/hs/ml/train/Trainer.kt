@@ -1,60 +1,38 @@
 package hs.ml.train
 
+import hs.ml.data.DataBatch
 import hs.ml.math.Tensor
 import hs.ml.model.Model
-import hs.ml.scaler.StandardScaler
-import hs.ml.train.optimizer.Optimizer
-import hs.ml.train.optimizer.SGD
 
-class Trainer {
-    val model: Model
-    val grad: (Double) -> Double
-    val optim: Optimizer
+class Trainer(
+    val model: Model,
+) {
+    fun trainStep(batch: DataBatch): Double {
+        // Forward pass
+        val predictions = model.forward(batch.inputs)
 
-    constructor(model: Model, grad: (Double) -> Double, optim: Optimizer = SGD()) {
-        this.model = model
-        this.grad = grad
-        this.optim = optim
+        // Compute loss and gradients
+        val loss = model.param.loss.compute(batch.labels, predictions)
+        val gradients = model.param.loss.gradient(batch.labels, predictions)
+
+        // Update model parameters
+        val (w, b) = model.param.optimizer.step(Pair(model.weights, model.bias), gradients)
+        model.weights = w
+        model.bias = b
+
+        return loss
     }
 
-    companion object {
-        inline fun <reified T : Model> create(noinline grad: (Double) -> Double): Trainer {
-            val model = ModelFactory.create<T>().getModel()
-            return Trainer(model, grad)
+    fun train(batch: DataBatch, epochs: Int = 1000, verbose: Boolean = false) {
+        model.weights = Tensor(batch.inputs.col, batch.labels.col) { i, j ->
+            Math.random() * 0.01
         }
-    }
+        model.bias = 0.0
 
-    fun descent(x: Tensor, y: Tensor, lr: Double) {
-//        val yhat = model.predict(x)
-//        val errors = Tensor(y.row, 1) { i, j -> grad(yhat[i, j] - y[i, j]) }
-//        // 가중치와 편향 업데이트
-//        for (j in 0 until x.col) {
-//            var gradient = 0.0
-//            for (i in 0 until x.row) {
-//                gradient += errors[i, 0] * x[i, j] / x.row
-//            }
-//            model.weights[j, 0] -= lr * gradient
-//        }
-//
-//        var biasGradient = 0.0
-//        for (i in 0 until x.row) {
-//            biasGradient += errors[i, 0] / x.row
-//        }
-//        model.bias -= lr * biasGradient
-    }
-
-    fun fit(xOrg: Tensor, y: Tensor, epochs: Int, lr: Double) {
-//        model.scaler = StandardScaler()
-//        model.scaler.fit(xOrg)
-//        val x = model.scaler.predict(xOrg)
-//
-//        model.weights = Tensor(x.col, 1) { i, j -> 0.0 }
-//        model.bias = 0.0
-//
-//        for (epoch in 0 until epochs) {
-//            descent(x, y, lr)
-//        }
-//
-//        model.epoch += epochs
+        for (epoch in 1..epochs) {
+            val loss = trainStep(batch)
+            if (verbose && epoch % 100 == 0)
+                println("Epoch $epoch, Loss: $loss")
+        }
     }
 }

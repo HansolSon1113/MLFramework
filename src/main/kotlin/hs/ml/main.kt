@@ -9,6 +9,8 @@ import hs.ml.preprocessing.DataPreprocessor
 import hs.ml.preprocessing.policy.ReplaceToAvgPolicy
 import hs.ml.scaler.StandardScaler
 import hs.ml.train.ModelFactory
+import hs.ml.train.Trainer
+import hs.ml.train.optimizer.Adam
 import hs.ml.train.optimizer.SGD
 import hs.ml.util.formatBytes
 import java.io.File
@@ -30,19 +32,26 @@ fun main() {
         importer = importer,
         preprocessor = DataPreprocessor(missingPolicy = ReplaceToAvgPolicy())
     )
-    val (x, y) = pipeline.run()
+    val batch = pipeline.run()
 
     println("데이터 불러오기 완료!")
-    println("x: ${x.shape}, y: ${y.shape}")
+    println("x: ${batch.inputs.shape}, y: ${batch.labels.shape}")
 
     println("\n**모델 선택 단계**\n")
 
     val model = ModelFactory.create<LinearRegressor>()
         .setScaler(StandardScaler())
         .setLoss(MeanSquaredError())
-        .setOptimizer(SGD(lr = 0.01))
+        .setOptimizer(Adam(lr = 0.001))
         .addMetric(RootMeanSquaredError())
         .getModel()
 
     println("모델 생성 완료! : $model")
+
+    println("\n**학습 시작**\n")
+    val trainer = Trainer(model)
+    trainer.train(batch, epochs = 1000, verbose = true)
+
+    println("\n**학습 완료**\n")
+    println(model)
 }

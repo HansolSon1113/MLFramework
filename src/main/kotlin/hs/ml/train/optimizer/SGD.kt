@@ -10,9 +10,12 @@ class SGD : Optimizer {
         this.lr = lr
     }
 
-    override fun step(params: Tensor, gradients: Tensor): Tensor {
-        return Tensor(params.row, params.col) { i, j ->
-            params[i][j] - (lr * gradients[i][j])
+    override fun step(params: Pair<Tensor, Double>, gradients: Pair<Tensor, Double>): Pair<Tensor, Double> {
+        val w = Tensor(params.first.row, params.first.col) { i, j ->
+            params.first[i][j] - (lr * gradients.first[i][j])
         }
+        val b = gradients.second.let { params.second - (lr * it) }
+
+        return Pair(w, b)
     }
 }

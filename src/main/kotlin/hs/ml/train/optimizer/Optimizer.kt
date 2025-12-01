@@ -5,5 +5,5 @@ import hs.ml.math.Tensor
 interface Optimizer {
     val lr: Double
 
-    fun step(params: Tensor, gradients: Tensor): Tensor
+    fun step(params: Pair<Tensor, Double>, gradients: Pair<Tensor, Double>): Pair<Tensor, Double>
 }

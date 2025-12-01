@@ -83,7 +83,7 @@ class Tensor(val row: Int, val col: Int) {
 
     operator fun times(tensor: Tensor): Tensor {
         if (this.col != tensor.row)
-            throw IllegalArgumentException("행렬 곱의 차원이 일치하지 않습니다.")
+            throw IllegalArgumentException("행렬 곱의 차원이 일치하지 않습니다. (${this.row}, ${this.col}) x (${tensor.row}, ${tensor.col})")
 
         val ans = Tensor(this.row, tensor.col)
         for (i in 0 until this.row) {
