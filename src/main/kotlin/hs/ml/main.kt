@@ -55,4 +55,11 @@ fun main() {
 
     println("\n**학습 완료**\n")
     println(model)
+
+    println("\n예측 결과 예시:")
+    val sampleInput = batch.inputs
+    val predictions = model.forward(sampleInput)
+    for (i in 0 until 5) {
+        println("입력: ${sampleInput.data[i]} => 예측: ${predictions.data[i]}, 실제값: ${batch.labels.data[i]}")
+    }
 }
