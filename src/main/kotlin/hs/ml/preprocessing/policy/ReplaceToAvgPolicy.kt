@@ -1,10 +1,8 @@
-// hs/ml/preprocessing/policy/ReplaceToAvgPolicy.kt
 package hs.ml.preprocessing.policy
 
 import hs.ml.math.Tensor
 
 class ReplaceToAvgPolicy : MissingPolicy {
-
     override fun handle(tensor: Tensor): Tensor {
         println("MissingPolicy: 결측치를 각 피처(열)의 평균값으로 대체합니다.")
         val columnMeans = DoubleArray(tensor.col) { colIdx ->
