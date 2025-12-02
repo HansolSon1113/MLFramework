@@ -105,7 +105,7 @@ class Tensor(val row: Int, val col: Int) {
 
     infix fun hadamard(other: Tensor): Tensor {
         if (this.row != other.row || this.col != other.col)
-            throw IllegalArgumentException("행렬 곱의 차원이 일치하지 않습니다.")
+            throw IllegalArgumentException("Shapes must match for Hadamard product")
         return Tensor(this.row, this.col) { i, j ->
             this[i, j] * other[i, j]
         }

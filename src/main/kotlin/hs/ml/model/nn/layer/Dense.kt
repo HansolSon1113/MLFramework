@@ -13,8 +13,8 @@ class Dense(val inputSize: Int, val outputSize: Int) : Layer() {
         val weightedSum = input * weights
 
        val output = Tensor(weightedSum.row, weightedSum.col) { _: Int, _: Int -> Random.nextDouble(-0.1, 0.1) }
-        for (i in 0 ..< weightedSum.row) {
-            for (j in 0 ..< weightedSum.col) {
+        for (i in 0 until weightedSum.row) {
+            for (j in 0 until weightedSum.col) {
                 output[i, j] = weightedSum[i, j] + bias[0, j]
             }
         }
