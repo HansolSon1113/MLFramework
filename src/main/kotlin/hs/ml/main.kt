@@ -4,6 +4,8 @@ import hs.ml.autograd.Node
 import hs.ml.data.DataPipeline
 import hs.ml.importer.CsvImporter
 import hs.ml.loss.MeanSquaredError
+import hs.ml.metric.F1
+import hs.ml.metric.RootMeanSquaredError
 import hs.ml.model.Model
 import hs.ml.model.nn.Dense
 import hs.ml.model.nn.activation.ReLU
@@ -61,6 +63,7 @@ fun main() {
     val model = HousingNeuralNet(inputFeatureSize)
     model.param.loss = MeanSquaredError()
     model.param.optimizer = Adam(lr = 0.01)
+    model.param.metric.add(RootMeanSquaredError())
     println("모델 생성 완료! : $model")
 
     println("\n**학습 시작**\n")
@@ -80,4 +83,8 @@ fun main() {
 
         println("[$i] 실제값: ${String.format("%.4f", actual)} | 예측값: ${String.format("%.4f", prediction)} | 오차: ${String.format("%.4f", diff)}")
     }
+
+    println("\n**평가**\n")
+    val selectedResult = trainer.evaluate(batch, RootMeanSquaredError(), F1())
+    println("평가: $selectedResult")
 }

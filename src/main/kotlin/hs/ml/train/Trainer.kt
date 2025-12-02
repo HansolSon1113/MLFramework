@@ -3,6 +3,7 @@ package hs.ml.train
 import hs.ml.autograd.Node
 import hs.ml.data.DataBatch
 import hs.ml.math.Tensor
+import hs.ml.metric.Metric
 import hs.ml.model.Model
 
 class Trainer(
@@ -29,7 +30,28 @@ class Trainer(
         return loss
     }
 
-    fun train(batch: DataBatch, epochs: Int = 1000, verbose: Boolean = false) {
+    fun evaluate(batch: DataBatch, vararg metrics: Metric): Map<String, Double> {
+        val inputs = Node(batch.inputs)
+
+        val pred = model.forward(inputs)
+
+        val results = mutableMapOf<String, Double>()
+
+        val loss = model.param.loss.compute(batch.labels, pred.data)
+        results["Loss"] = loss
+
+        val targetMetrics = if (metrics.isEmpty()) model.param.metric else metrics.toList()
+
+        targetMetrics.forEach { metric ->
+            val metricName = metric::class.simpleName ?: "Metric"
+            val score = metric.evaluate(batch.labels, pred.data)
+            results[metricName] = score
+        }
+
+        return results
+    }
+
+    fun train(batch: DataBatch, epochs: Int = 1000, verbose: Boolean = false, showMetric: Int = 100) {
         val startEpoch = model.epoch + 1
         val targetEpoch = model.epoch + epochs
 
@@ -38,12 +60,15 @@ class Trainer(
         }
 
         for (i in startEpoch..targetEpoch) {
-            val loss = trainStep(batch)
-
+            trainStep(batch)
             model.epoch = i
 
-            if (verbose && i % 100 == 0) {
-                println("Epoch $i, Loss: $loss")
+            if (verbose && i % showMetric == 0) {
+                val metrics = evaluate(batch)
+                val logMsg = metrics.entries.joinToString(", ") { (name, value) ->
+                    "$name: ${String.format("%.4f", value)}"
+                }
+                println("Epoch $i | $logMsg")
             }
         }
     }
