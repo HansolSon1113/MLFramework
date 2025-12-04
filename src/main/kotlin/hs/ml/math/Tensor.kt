@@ -14,6 +14,8 @@ class Tensor(val row: Int, val col: Int) {
     val shape: Pair<Int, Int>
         get() = Pair(row, col)
 
+    constructor(): this(0, 0)
+
     constructor(row: Int, col: Int, value: Double) : this(row, col) {
         for (i in 0..<this.row)
             for (j in 0..<this.col)
@@ -145,7 +147,6 @@ class Tensor(val row: Int, val col: Int) {
         return when (axis) {
             Axis.VERTICAL -> Tensor(1, this.col) { _, j -> (0 ..< row).sumOf { i -> this[i, j] } }
             Axis.HORIZONTAL -> Tensor(this.row, 1) { i, _ -> this[i].sum() }
-            else -> throw IllegalArgumentException("잘못된 축이 입력되었습니다.")
         }
     }
 
