@@ -151,7 +151,7 @@ class Tensor(val row: Int, val col: Int) {
     }
 
     fun max(): Double {
-        var ans = -Double.MIN_VALUE;
+        var ans = Double.NEGATIVE_INFINITY
         for (i in 0 until this.row)
             for (j in 0 until this.col)
                 if (ans < this[i, j])
@@ -161,7 +161,7 @@ class Tensor(val row: Int, val col: Int) {
     }
 
     fun min(): Double {
-        var ans = Double.MAX_VALUE;
+        var ans = Double.POSITIVE_INFINITY
         for (i in 0 until this.row)
             for (j in 0 until this.col)
                 if (ans > this[i, j])
