@@ -6,6 +6,7 @@ import hs.ml.math.Tensor
 import hs.ml.metric.Metric
 import hs.ml.model.Model
 import hs.ml.train.policy.StoppingPolicy
+import hs.ml.ui.view.MLView
 
 class Trainer(val model: Model, val stoppingPolicy: StoppingPolicy? = null) {
     fun trainStep(batch: DataBatch): Double {
@@ -50,11 +51,18 @@ class Trainer(val model: Model, val stoppingPolicy: StoppingPolicy? = null) {
         return results
     }
 
-    fun train(train: DataBatch, test: DataBatch? = null, epochs: Int = 1000, verbose: Boolean = false, evalEpoch: Int = 100) {
+    fun train(
+        train: DataBatch,
+        test: DataBatch? = null,
+        epochs: Int = 1000,
+        verbose: ((Int, String) -> Unit)? = null,
+        evalEpoch: Int = 100
+    ) {
         val startEpoch = model.epoch + 1
         val targetEpoch = model.epoch + epochs
+        val shouldPrint = verbose != null
 
-        if (verbose) println("Training started: Epoch $startEpoch to $targetEpoch")
+        verbose?.invoke(startEpoch, "Training started: Epoch $startEpoch to $targetEpoch")
         stoppingPolicy?.reset()
 
         for (i in startEpoch..targetEpoch) {
@@ -62,7 +70,7 @@ class Trainer(val model: Model, val stoppingPolicy: StoppingPolicy? = null) {
             model.epoch = i
 
             val shouldStop = stoppingPolicy?.shouldStop(i, loss) ?: false
-            val shouldLog = verbose && i % evalEpoch == 0
+            val shouldLog = shouldPrint && i % evalEpoch == 0
 
             if (shouldLog || shouldStop) {
                 val metrics = evaluate(test ?: train)
@@ -71,10 +79,10 @@ class Trainer(val model: Model, val stoppingPolicy: StoppingPolicy? = null) {
                 }
 
                 if (shouldStop) {
-                    println("Training stopped by stopping policy. Epoch $i | $logMsg")
+                    verbose?.invoke(i, "Training stopped by stopping policy.\n$logMsg")
                     break
                 } else {
-                    println("Epoch $i | $logMsg")
+                    verbose?.invoke(i, logMsg)
                 }
             }
         }
