@@ -2,7 +2,6 @@ package hs.ml.autograd
 
 import hs.ml.math.Tensor
 
-//Computational Graph
 class Node(var data: Tensor, val children: List<Node> = emptyList(), val debug: String = "") {
     var grad: Tensor = Tensor(data.row, data.col, 0.0)
     internal var _backward: () -> Unit = {}
@@ -24,8 +23,12 @@ class Node(var data: Tensor, val children: List<Node> = emptyList(), val debug: 
         return out
     }
 
+    operator fun minus(other: Node): Node {
+        return this + (-other)
+    }
+
     operator fun unaryMinus(): Node {
-        return this * Node(Tensor(data.row, data.col, -1.0))
+        return this * -1.0
     }
 
     operator fun times(other: Node): Node {
@@ -34,6 +37,15 @@ class Node(var data: Tensor, val children: List<Node> = emptyList(), val debug: 
         out._backward = {
             this.grad = this.grad + (out.grad * other.data.T)
             other.grad = other.grad + (this.data.T * out.grad)
+        }
+        return out
+    }
+
+    operator fun times(scalar: Double): Node {
+        val out = Node(this.data * scalar, listOf(this), "*$scalar")
+
+        out._backward = {
+            this.grad = this.grad + (out.grad * scalar)
         }
         return out
     }
@@ -58,6 +70,26 @@ class Node(var data: Tensor, val children: List<Node> = emptyList(), val debug: 
             this.grad = this.grad + (out.grad.hadamard(localDerivative))
         }
         return out
+    }
+    fun mean(): Node {
+        val totalElements = (this.data.row * this.data.col).toDouble()
+        var sum = 0.0
+        for(i in 0 until this.data.row) {
+            for(j in 0 until this.data.col) {
+                sum += this.data[i, j]
+            }
+        }
+        val out = Node(Tensor(1, 1, sum / totalElements), listOf(this), "mean")
+
+        out._backward = {
+            val gradVal = out.grad[0, 0] / totalElements
+            this.grad = this.grad + Tensor(this.data.row, this.data.col, gradVal)
+        }
+        return out
+    }
+
+    fun log(): Node {
+        return this.map({ kotlin.math.ln(it) }, { 1.0 / it })
     }
 
     fun backward(initialGrad: Tensor? = null) {

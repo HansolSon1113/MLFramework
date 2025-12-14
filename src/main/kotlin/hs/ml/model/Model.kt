@@ -4,7 +4,7 @@ import hs.ml.autograd.Node
 
 abstract class Model {
     var param: ModelParameter = ModelParameter()
-    var epoch: Int = 0 //For future training
+    var epoch: Int = 0
     val isTrained: Boolean
         get() = epoch > 0
 

@@ -10,35 +10,30 @@ import hs.ml.train.policy.StoppingPolicy
 class Trainer(val model: Model, val stoppingPolicy: StoppingPolicy? = null) {
     fun trainStep(batch: DataBatch): Double {
         val inputs = Node(batch.inputs)
+        val targets = Node(batch.labels)
 
-        // Forward pass
         val pred: Node = model.forward(inputs)
+        val loss = model.param.loss.compute(targets, pred)
 
-        // Compute loss and gradients
-        val loss = model.param.loss.compute(batch.labels, pred.data)
-        val (grad, _) = model.param.loss.gradient(batch.labels, pred.data)
-
-        // Update model parameters
-        pred.backward(grad)
+        loss.backward()
         model.param.optimizer.step(model.params())
 
         model.params().forEach {
             it.grad = Tensor(it.data.row, it.data.col, 0.0)
         }
 
-        return loss
+        return loss.data[0, 0]
     }
 
     fun evaluate(batch: DataBatch, vararg metrics: Metric): Map<String, Double> {
         val inputs = Node(batch.inputs)
+        val targets = Node(batch.labels)
 
-        // Forward pass
         val pred = model.forward(inputs)
         val results = mutableMapOf<String, Double>()
 
-        // Compute loss
-        val loss = model.param.loss.compute(batch.labels, pred.data)
-        results["Loss"] = loss
+        val loss = model.param.loss.compute(targets, pred)
+        results["Loss"] = loss.data[0, 0]
 
         val targetMetrics = if (metrics.isEmpty()) model.param.metric else metrics.toList()
         targetMetrics.forEach { metric ->
@@ -63,16 +58,13 @@ class Trainer(val model: Model, val stoppingPolicy: StoppingPolicy? = null) {
         val targetEpoch = model.epoch + epochs
         val shouldPrint = verbose != null
 
-        // Print if verbose function is not null
         verbose?.invoke(startEpoch, "Training started: Epoch $startEpoch to $targetEpoch")
         stoppingPolicy?.reset()
 
         for (i in startEpoch..targetEpoch) {
-            // Perform one step(forward -> backward)
             val loss = trainStep(train)
             model.epoch = i
 
-            // Stop condition check
             val shouldStop = stoppingPolicy?.shouldStop(i, loss) ?: false
             val shouldLog = shouldPrint && i % evalEpoch == 0
 

@@ -1,8 +1,7 @@
 package hs.ml.loss
 
-import hs.ml.math.Tensor
+import hs.ml.autograd.Node
 
 interface Loss {
-    fun compute(yTrue: Tensor, yPred: Tensor): Double
-    fun gradient(yTrue: Tensor, yPred: Tensor): Pair<Tensor, Double>
+    fun compute(yTrue: Node, yPred: Node): Node
 }

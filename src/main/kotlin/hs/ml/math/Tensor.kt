@@ -37,7 +37,6 @@ class Tensor(val row: Int, val col: Int) {
     }
 
     constructor(dataArray: Array<DoubleArray>) : this(dataArray.size, dataArray[0].size) {
-        // Array 타입을 MutableList로 변환하는 로직을 내부에서 처리합니다.
         for (i in 0 until this.row) {
             for (j in 0 until this.col) {
                 this.data[i][j] = dataArray[i][j]
@@ -72,7 +71,7 @@ class Tensor(val row: Int, val col: Int) {
             val ans = Tensor(this.row, this.col)
             for (i in 0..<this.row) {
                 for (j in 0..<this.col) {
-                    ans[i, j] = this[i, j] + tensor[0, j] // 같은 열의 값을 계속 더함
+                    ans[i, j] = this[i, j] + tensor[0, j]
                 }
             }
             return ans
