@@ -3,6 +3,7 @@ package hs.ml.train
 import hs.ml.autograd.Node
 import hs.ml.data.DataBatch
 import hs.ml.math.Tensor
+import hs.ml.math.TensorFactory
 import hs.ml.metric.Metric
 import hs.ml.model.Model
 import hs.ml.train.policy.StoppingPolicy
@@ -19,7 +20,7 @@ class Trainer(val model: Model, val stoppingPolicy: StoppingPolicy? = null) {
         model.param.optimizer.step(model.params())
 
         model.params().forEach {
-            it.grad = Tensor(it.data.row, it.data.col, 0.0)
+            it.grad = TensorFactory.create(it.data.row, it.data.col, 0.0)
         }
 
         return loss.data[0, 0]

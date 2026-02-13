@@ -1,6 +1,7 @@
 package hs.ml.scaler
 
 import hs.ml.math.Tensor
+import hs.ml.math.TensorFactory
 import kotlin.math.sqrt
 
 class StandardScaler : Scaler() {
@@ -8,9 +9,8 @@ class StandardScaler : Scaler() {
     private lateinit var std: Tensor
 
     override fun fit(x: Tensor, y: Tensor, epochs: Int, lr: Double) {
-        println("StandardScaler: fit 시작...")
         val cols = x.col
-        mean = Tensor(1, cols) { j, _ ->
+        mean = TensorFactory.create(1, cols) { j, _ ->
             var sum = 0.0
             for (i in 0 until x.row) {
                 sum += x[i, j]
@@ -18,7 +18,7 @@ class StandardScaler : Scaler() {
             sum / x.row
         }
 
-        std = Tensor(1, cols) { j, _ ->
+        std = TensorFactory.create(1, cols) { j, _ ->
             var sumSq = 0.0
             for (i in 0 until x.row) {
                 val diff = x[i, j] - mean[0, j]
@@ -31,27 +31,22 @@ class StandardScaler : Scaler() {
     }
 
     override fun transform(x: Tensor): Tensor {
-        require(isTrained) { "Scaler가 학습되지 않았습니다. fit 메서드를 먼저 호출하세요." }
-        println("StandardScaler: transform 실행 중...")
+        require(isTrained) { "Scaler must be fitted before transformation" }
 
-        val result = Tensor(x.row, x.col) { i, j ->
+        return TensorFactory.create(x.row, x.col) { i, j ->
             if (std[0, j] != 0.0) {
                 (x[i, j] - mean[0, j]) / std[0, j]
             } else {
                 0.0
             }
         }
-
-        return result
     }
 
     override fun inverse(x: Tensor): Tensor {
-        require(isTrained) { "Scaler가 학습되지 않았습니다. fit 메서드를 먼저 호출하세요." }
+        require(isTrained) { "Scaler must be fitted before inverse transformation" }
 
-        val result = Tensor(x.row, x.col) { i, j ->
+        return TensorFactory.create(x.row, x.col) { i, j ->
             x[i, j] * std[0, j] + mean[0, j]
         }
-
-        return result
     }
 }

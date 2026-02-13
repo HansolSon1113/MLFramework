@@ -1,13 +1,18 @@
 package hs.ml.autograd
 
 import hs.ml.math.Tensor
+import hs.ml.math.TensorFactory
 
-class Node(var data: Tensor, val children: List<Node> = emptyList(), val debug: String = "") {
-    var grad: Tensor = Tensor(data.row, data.col, 0.0)
+data class Node(
+    var data: Tensor,
+    var grad: Tensor = TensorFactory.create(data.row, data.col, 0.0),
+    val children: List<Node> = emptyList(),
+    val operation: String = ""
+) {
     internal var _backward: () -> Unit = {}
 
     operator fun plus(other: Node): Node {
-        val out = Node(this.data + other.data, listOf(this, other), "+")
+        val out = Node(this.data + other.data, children = listOf(this, other), operation = "+")
         fun updateGrad(node: Node) {
             if (node.data.shape == out.grad.shape) {
                 node.grad += out.grad
@@ -23,16 +28,12 @@ class Node(var data: Tensor, val children: List<Node> = emptyList(), val debug: 
         return out
     }
 
-    operator fun minus(other: Node): Node {
-        return this + (-other)
-    }
+    operator fun minus(other: Node): Node = this + (-other)
 
-    operator fun unaryMinus(): Node {
-        return this * -1.0
-    }
+    operator fun unaryMinus(): Node = this * -1.0
 
     operator fun times(other: Node): Node {
-        val out = Node(this.data * other.data, listOf(this, other), "*")
+        val out = Node(this.data * other.data, children = listOf(this, other), operation = "*")
 
         out._backward = {
             this.grad = this.grad + (out.grad * other.data.T)
@@ -42,7 +43,7 @@ class Node(var data: Tensor, val children: List<Node> = emptyList(), val debug: 
     }
 
     operator fun times(scalar: Double): Node {
-        val out = Node(this.data * scalar, listOf(this), "*$scalar")
+        val out = Node(this.data * scalar, children = listOf(this), operation = "*$scalar")
 
         out._backward = {
             this.grad = this.grad + (out.grad * scalar)
@@ -52,7 +53,7 @@ class Node(var data: Tensor, val children: List<Node> = emptyList(), val debug: 
 
     fun map(transform: (Double) -> Double, derivative: (Double) -> Double): Node {
         val outData = this.data.map(transform)
-        val out = Node(outData, listOf(this), "map")
+        val out = Node(outData, children = listOf(this), operation = "map")
 
         out._backward = {
             val localGrad = this.data.map(derivative)
@@ -62,7 +63,7 @@ class Node(var data: Tensor, val children: List<Node> = emptyList(), val debug: 
     }
 
     fun pow(exponent: Int): Node {
-        val out = Node(this.data.pow(exponent), listOf(this), "^$exponent")
+        val out = Node(this.data.pow(exponent), children = listOf(this), operation = "^$exponent")
 
         out._backward = {
             val n = exponent.toDouble()
@@ -71,26 +72,25 @@ class Node(var data: Tensor, val children: List<Node> = emptyList(), val debug: 
         }
         return out
     }
+
     fun mean(): Node {
         val totalElements = (this.data.row * this.data.col).toDouble()
         var sum = 0.0
-        for(i in 0 until this.data.row) {
-            for(j in 0 until this.data.col) {
+        for (i in 0 until this.data.row) {
+            for (j in 0 until this.data.col) {
                 sum += this.data[i, j]
             }
         }
-        val out = Node(Tensor(1, 1, sum / totalElements), listOf(this), "mean")
+        val out = Node(TensorFactory.create(1, 1, sum / totalElements), children = listOf(this), operation = "mean")
 
         out._backward = {
             val gradVal = out.grad[0, 0] / totalElements
-            this.grad = this.grad + Tensor(this.data.row, this.data.col, gradVal)
+            this.grad = this.grad + TensorFactory.create(this.data.row, this.data.col, gradVal)
         }
         return out
     }
 
-    fun log(): Node {
-        return this.map({ kotlin.math.ln(it) }, { 1.0 / it })
-    }
+    fun log(): Node = this.map({ kotlin.math.ln(it) }, { 1.0 / it })
 
     fun backward(initialGrad: Tensor? = null) {
         val topo = mutableListOf<Node>()
@@ -105,11 +105,7 @@ class Node(var data: Tensor, val children: List<Node> = emptyList(), val debug: 
         }
         visit(this)
 
-        if (initialGrad != null) {
-            this.grad = initialGrad
-        } else {
-            this.grad = Tensor(data.row, data.col, 1.0)
-        }
+        this.grad = initialGrad ?: TensorFactory.create(data.row, data.col, 1.0)
 
         for (node in topo.reversed()) {
             node._backward()

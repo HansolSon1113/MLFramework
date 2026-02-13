@@ -1,7 +1,8 @@
 package hs.ml.importer
 
 import hs.ml.data.DataBatch
-import hs.ml.math.Tensor
+import hs.ml.math.TensorFactory
+import kotlin.random.Random
 
 class LinearDataGenerator(
     val n: Int,
@@ -10,10 +11,9 @@ class LinearDataGenerator(
     val noise: Double
 ): DataImporter {
     override fun read(): DataBatch {
-        val x = Tensor(n, 1) { i, j -> (i + 1).toDouble() }
-        val y = Tensor(n, 1) { i, j ->
-            val xi = x[i, 0]
-            slope * xi + bias + (Math.random() * 2 - 1) * noise
+        val x = TensorFactory.create(n, 1) { i, j -> (i + 1).toDouble() }
+        val y = TensorFactory.create(n, 1) { i, j ->
+            slope * x[i, j] + bias + Random.nextDouble(-noise, noise)
         }
 
         return DataBatch(x, y)

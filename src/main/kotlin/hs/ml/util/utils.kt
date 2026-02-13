@@ -2,6 +2,7 @@ package hs.ml.util
 
 import hs.ml.data.DataBatch
 import hs.ml.math.Tensor
+import hs.ml.math.TensorFactory
 import kotlin.math.roundToInt
 
 fun formatBytes(bytes: Long): String {
@@ -23,10 +24,10 @@ fun trainTestSplit(data: DataBatch, trainRatio: Double): Pair<DataBatch, DataBat
     val testIndices = indices.drop(trainSize)
 
     fun createBatch(batchIndices: List<Int>) = DataBatch(
-        inputs = Tensor(batchIndices.size, data.inputs.col) { i, j ->
+        inputs = TensorFactory.create(batchIndices.size, data.inputs.col) { i, j ->
             data.inputs[batchIndices[i], j]
         },
-        labels = Tensor(batchIndices.size, data.labels.col) { i, j ->
+        labels = TensorFactory.create(batchIndices.size, data.labels.col) { i, j ->
             data.labels[batchIndices[i], j]
         }
     )

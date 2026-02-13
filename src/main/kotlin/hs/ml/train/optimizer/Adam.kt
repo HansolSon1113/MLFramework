@@ -2,6 +2,7 @@ package hs.ml.train.optimizer
 
 import hs.ml.autograd.Node
 import hs.ml.math.Tensor
+import hs.ml.math.TensorFactory
 import kotlin.math.pow
 import kotlin.math.sqrt
 
@@ -45,8 +46,8 @@ class Adam : Optimizer {
         for (param in params) {
             if (!state.containsKey(param)) {
                 state[param] = AdamState(
-                    m = Tensor(param.data.row, param.data.col, 0.0),
-                    v = Tensor(param.data.row, param.data.col, 0.0)
+                    m = TensorFactory.create(param.data.row, param.data.col, 0.0),
+                    v = TensorFactory.create(param.data.row, param.data.col, 0.0)
                 )
             }
 

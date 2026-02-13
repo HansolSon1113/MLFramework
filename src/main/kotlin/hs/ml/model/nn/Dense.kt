@@ -3,6 +3,7 @@ package hs.ml.model.nn
 import java.util.concurrent.ThreadLocalRandom
 import hs.ml.autograd.Node
 import hs.ml.math.Tensor
+import hs.ml.math.TensorFactory
 import kotlin.math.sqrt
 
 class Dense : Layer {
@@ -15,10 +16,10 @@ class Dense : Layer {
 
         this.inputSize = inputSize
         this.outputSize = outputSize
-        this.weights = Node(Tensor(inputSize, outputSize) { _, _ ->
+        this.weights = Node(TensorFactory.create(inputSize, outputSize) { _, _ ->
             ThreadLocalRandom.current().nextGaussian() * sqrt(2.0 / inputSize)
         })
-        this.bias = Node(Tensor(1, outputSize, 0.0))
+        this.bias = Node(TensorFactory.create(1, outputSize, 0.0))
     }
 
     var weights: Node

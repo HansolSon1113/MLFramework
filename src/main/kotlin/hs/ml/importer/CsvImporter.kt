@@ -1,7 +1,7 @@
 package hs.ml.importer
 
 import hs.ml.data.DataBatch
-import hs.ml.math.Tensor
+import hs.ml.math.TensorFactory
 import java.io.File
 
 class CsvImporter(val path: String): DataImporter {
@@ -15,8 +15,8 @@ class CsvImporter(val path: String): DataImporter {
         val row = data.size
         val col = data[0].size
 
-        val x = Tensor(row, col - 1)
-        val y = Tensor(row, 1)
+        val x = TensorFactory.create(row, col - 1)
+        val y = TensorFactory.create(row, 1)
         for (i in 0 until row) {
             for (j in 0 until col - 1) {
                 x[i, j] = data[i][j]
