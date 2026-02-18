@@ -1,7 +1,7 @@
 package hs.ml.loss
 
 import hs.ml.autograd.Node
-import hs.ml.math.Tensor
+import hs.ml.math.TensorFactory
 
 class BinaryCrossEntropy: Loss {
     override fun compute(yTrue: Node, yPred: Node): Node {
@@ -13,8 +13,8 @@ class BinaryCrossEntropy: Loss {
         val cols = yTrue.data.col
         val epsVal = 1e-15
 
-        val ones = Node(Tensor(rows, cols, 1.0))
-        val epsilon = Node(Tensor(rows, cols, epsVal))
+        val ones = Node(TensorFactory.create(rows, cols, 1.0))
+        val epsilon = Node(TensorFactory.create(rows, cols, epsVal))
 
         val logP = (yPred + epsilon).log()
         val logOneMinusP = (ones - yPred + epsilon).log()

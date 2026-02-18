@@ -6,9 +6,13 @@ import hs.ml.math.Tensor
 import hs.ml.math.TensorFactory
 import kotlin.math.sqrt
 
-class Dense : Layer {
+open class Dense : Layer {
     val inputSize: Int
     val outputSize: Int
+    var weights: Node
+        private set
+    var bias: Node
+        private set
 
     constructor(inputSize: Int, outputSize: Int) : super() {
         require(inputSize > 0)
@@ -22,14 +26,8 @@ class Dense : Layer {
         this.bias = Node(TensorFactory.create(1, outputSize, 0.0))
     }
 
-    var weights: Node
-        private set
-    var bias: Node
-        private set
+    override fun forward(input: Node): Node = (input * weights) + bias
 
-    override fun forward(input: Node): Node {
-        return (input * weights) + bias
-    }
 
     override fun params(): List<Node> = listOf(weights, bias)
 }

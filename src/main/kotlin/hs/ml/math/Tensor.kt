@@ -66,6 +66,15 @@ abstract class Tensor(val row: Int, val col: Int) {
         return ans
     }
 
+    fun slice(startCol: Int, endCol: Int): Tensor {
+        require(startCol >= 0 && endCol <= this.col && startCol < endCol) {
+            "Invalid slice range: [$startCol, $endCol) for tensor with ${this.col} columns"
+        }
+        return createTensor(this.row, endCol - startCol) { i, j ->
+            this[i, startCol + j]
+        }
+    }
+
     override fun toString(): String {
         val builder = StringBuilder()
         for (i in 0..<this.row) {
