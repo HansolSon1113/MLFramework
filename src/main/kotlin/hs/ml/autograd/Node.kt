@@ -103,11 +103,22 @@ data class Node(
     fun log(): Node = this.map({ kotlin.math.ln(it) }, { 1.0 / it })
 
     fun split(parts: Int): Array<Node> {
-        require(parts > 0 || data.col % parts == 0) { "Invalid parts: ${parts}" }
+        require(parts > 0 && data.col % parts == 0) { "Invalid parts: ${parts}" }
 
         val r = data.col / parts
         return Array(parts) { i ->
-            Node(data.slice(i * r, i * r + r))
+            val startCol = i * r
+            Node(
+                data.slice(startCol, startCol + r),
+                children = listOf(this),
+                operation = "split[$i/$parts]"
+            ).also { node ->
+                node._backward = {
+                    for (row in 0 until grad.row)
+                        for (col in 0 until node.grad.col)
+                            grad[row, startCol + col] += node.grad[row, col]
+                }
+            }
         }
     }
 
