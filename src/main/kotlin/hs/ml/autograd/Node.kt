@@ -51,6 +51,16 @@ data class Node(
         return out
     }
 
+    infix fun hadamard(other: Node): Node {
+        val out = Node(this.data hadamard other.data, children = listOf(this, other), operation = "hadamard")
+
+        out._backward = {
+            this.grad = this.grad + (out.grad hadamard other.data)
+            other.grad = other.grad + (out.grad hadamard this.data)
+        }
+        return out
+    }
+
     fun map(transform: (Double) -> Double, derivative: (Double) -> Double): Node {
         val outData = this.data.map(transform)
         val out = Node(outData, children = listOf(this), operation = "map")
@@ -91,6 +101,15 @@ data class Node(
     }
 
     fun log(): Node = this.map({ kotlin.math.ln(it) }, { 1.0 / it })
+
+    fun split(parts: Int): Array<Node> {
+        require(parts > 0 || data.col % parts == 0) { "Invalid parts: ${parts}" }
+
+        val r = data.col / parts
+        return Array(parts) { i ->
+            Node(data.slice(i * r, i * r + r))
+        }
+    }
 
     fun backward(initialGrad: Tensor? = null) {
         val topo = mutableListOf<Node>()

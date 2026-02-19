@@ -41,7 +41,7 @@ abstract class Tensor(val row: Int, val col: Int) {
 
     fun sum(axis: Axis): Tensor {
         return when (axis) {
-            Axis.VERTICAL -> createTensor(1, this.col) { _, j -> (0 ..< row).sumOf { i -> this[i, j] } }
+            Axis.VERTICAL -> createTensor(1, this.col) { _, j -> (0..<row).sumOf { i -> this[i, j] } }
             Axis.HORIZONTAL -> createTensor(this.row, 1) { i, _ -> this[i].sum() }
         }
     }
