@@ -4,7 +4,7 @@ import hs.ml.autograd.Node
 import hs.ml.model.nn.Layer
 import hs.ml.model.nn.sequential.recurrent.Recurrent
 
-class RecurrentBlock(val rec: Recurrent): Layer() {
+open class RecurrentManyToOneBlock(val rec: Recurrent): Layer() {
     override fun forward(input: Node): Node {
         rec.reset()
 
