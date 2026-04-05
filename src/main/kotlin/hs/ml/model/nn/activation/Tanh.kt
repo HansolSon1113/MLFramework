@@ -4,7 +4,7 @@ import hs.ml.autograd.Node
 import hs.ml.model.nn.Layer
 import kotlin.math.exp
 
-class Tanh : Layer() {
+class Tanh : Layer {
     override fun forward(input: Node): Node {
         return input.map(
             transform = { x ->

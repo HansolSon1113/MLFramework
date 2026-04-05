@@ -1,7 +1,10 @@
 package hs.ml.autograd
 
 import hs.ml.math.Tensor
+import hs.ml.math.Tensor.Axis
 import hs.ml.math.TensorFactory
+import hs.ml.util.EPSILON
+import kotlin.math.sqrt
 
 data class Node(
     var data: Tensor,
@@ -83,6 +86,29 @@ data class Node(
         return out
     }
 
+    fun sum(axis: Axis): Node {
+        val out = Node(this.data.sum(axis), children = listOf(this), operation = "sum_$axis")
+        out._backward = {
+            when (axis) {
+                Tensor.Axis.VERTICAL -> {
+                    for (i in 0 until this.grad.row) {
+                        for (j in 0 until this.grad.col) {
+                            this.grad[i, j] += out.grad[0, j]
+                        }
+                    }
+                }
+                Tensor.Axis.HORIZONTAL -> {
+                    for (i in 0 until this.grad.row) {
+                        for (j in 0 until this.grad.col) {
+                            this.grad[i, j] += out.grad[i, 0]
+                        }
+                    }
+                }
+            }
+        }
+        return out
+    }
+
     fun mean(): Node {
         val totalElements = (this.data.row * this.data.col).toDouble()
         var sum = 0.0
@@ -102,24 +128,123 @@ data class Node(
 
     fun log(): Node = this.map({ kotlin.math.ln(it) }, { 1.0 / it })
 
-    fun split(parts: Int): Array<Node> {
-        require(parts > 0 && data.col % parts == 0) { "Invalid parts: ${parts}" }
+    fun split(parts: Int, axis: Tensor.Axis): Array<Node> {
+        require(parts > 0) { "Invalid parts: $parts" }
 
-        val r = data.col / parts
-        return Array(parts) { i ->
-            val startCol = i * r
-            Node(
-                data.slice(startCol, startCol + r),
-                children = listOf(this),
-                operation = "split[$i/$parts]"
-            ).also { node ->
-                node._backward = {
-                    for (row in 0 until grad.row)
-                        for (col in 0 until node.grad.col)
-                            grad[row, startCol + col] += node.grad[row, col]
+        return when (axis) {
+            Tensor.Axis.VERTICAL -> {
+                val c = data.col / parts
+                Array(parts) { i ->
+                    val startCol = i * c
+                    Node(
+                        data.slice(startCol, startCol + c, Tensor.Axis.VERTICAL),
+                        children = listOf(this),
+                        operation = "split_VERT[$i/$parts]"
+                    ).also { node ->
+                        node._backward = {
+                            for (row in 0 until grad.row) {
+                                for (col in 0 until node.grad.col) {
+                                    grad[row, startCol + col] += node.grad[row, col]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            Tensor.Axis.HORIZONTAL -> {
+                val r = data.row / parts
+                Array(parts) { i ->
+                    val startRow = i * r
+                    Node(
+                        data.slice(startRow, startRow + r, Tensor.Axis.HORIZONTAL),
+                        children = listOf(this),
+                        operation = "split_HORZ[$i/$parts]"
+                    ).also { node ->
+                        node._backward = {
+                            for (row in 0 until node.grad.row) {
+                                for (col in 0 until grad.col) {
+                                    grad[startRow + row, col] += node.grad[row, col]
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
+    }
+
+    fun slice(start: Int, end: Int, axis: Tensor.Axis): Node {
+        val outData = this.data.slice(start, end, axis)
+        val out = Node(outData, children = listOf(this), operation = "slice")
+
+        out._backward = {
+            when (axis) {
+                Tensor.Axis.VERTICAL -> {
+                    for (row in 0 until out.grad.row) {
+                        for (col in 0 until out.grad.col) {
+                            this.grad[row, start + col] += out.grad[row, col]
+                        }
+                    }
+                }
+                Tensor.Axis.HORIZONTAL -> {
+                    for (row in 0 until out.grad.row) {
+                        for (col in 0 until out.grad.col) {
+                            this.grad[start + row, col] += out.grad[row, col]
+                        }
+                    }
+                }
+            }
+        }
+        return out
+    }
+
+    fun concat(other: Node, axis: Tensor.Axis): Node {
+        val outData = this.data.concat(other.data, axis)
+        val out = Node(outData, children = listOf(this, other), operation = "concat_$axis")
+
+        out._backward = {
+            when (axis) {
+                Tensor.Axis.VERTICAL -> {
+                    val gradThis = out.grad.slice(0, this.data.col, Tensor.Axis.VERTICAL)
+                    val gradOther = out.grad.slice(this.data.col, out.data.col, Tensor.Axis.VERTICAL)
+
+                    this.grad = this.grad + gradThis
+                    other.grad = other.grad + gradOther
+                }
+
+                Tensor.Axis.HORIZONTAL -> {
+                    val gradThis = out.grad.slice(0, this.data.row, Tensor.Axis.HORIZONTAL)
+                    val gradOther = out.grad.slice(this.data.row, out.data.row, Tensor.Axis.HORIZONTAL)
+
+                    this.grad = this.grad + gradThis
+                    other.grad = other.grad + gradOther
+                }
+            }
+        }
+        return out
+    }
+
+    fun transpose(): Node {
+        val out = Node(this.data.T, children = listOf(this), operation = "transpose")
+        out._backward = {
+            this.grad = this.grad + out.grad.T
+        }
+        return out
+    }
+
+    fun cosineSimilarity(other: Node): Node {
+        val numerator = this * other.transpose()
+
+        fun norm(node: Node) = node.pow(2)
+            .sum(Tensor.Axis.HORIZONTAL)
+            .map({sqrt(it)}, {0.5 / sqrt(it)})
+
+        val denominator = norm(this) * norm(other).transpose()
+        val eps = denominator.map({ it + EPSILON }, { 1.0 })
+        val inverseDenominator = eps.map({ 1.0 / it }, { -1.0 / (it * it) })
+
+        return numerator.hadamard(inverseDenominator)
     }
 
     fun backward(initialGrad: Tensor? = null) {

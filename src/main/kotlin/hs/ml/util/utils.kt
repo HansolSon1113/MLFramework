@@ -34,3 +34,5 @@ fun trainTestSplit(data: DataBatch, trainRatio: Double): Pair<DataBatch, DataBat
 
     return Pair(createBatch(trainIndices), createBatch(testIndices))
 }
+
+val EPSILON = 1e-8

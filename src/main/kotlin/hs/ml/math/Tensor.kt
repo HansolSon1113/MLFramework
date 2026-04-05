@@ -1,6 +1,8 @@
 package hs.ml.math
 
+import hs.ml.util.EPSILON
 import kotlin.math.pow
+import kotlin.math.sqrt
 
 abstract class Tensor(val row: Int, val col: Int) {
     enum class Axis {
@@ -66,12 +68,47 @@ abstract class Tensor(val row: Int, val col: Int) {
         return ans
     }
 
-    fun slice(startCol: Int, endCol: Int): Tensor {
-        require(startCol >= 0 && endCol <= this.col && startCol < endCol) {
-            "Invalid slice range: [$startCol, $endCol) for tensor with ${this.col} columns"
+    fun slice(start: Int, end: Int, axis: Axis): Tensor {
+        return when (axis) {
+            Axis.VERTICAL -> {
+                require(start >= 0 && end <= this.col && start < end) {
+                    "Invalid slice range: [$start, $end] for tensor with ${this.col} columns"
+                }
+                createTensor(this.row, end - start) { i, j ->
+                    this[i, start + j]
+                }
+            }
+
+            Axis.HORIZONTAL -> {
+                require(start >= 0 && end <= this.row && start < end) {
+                    "Invalid slice range: [$start, $end] for tensor with ${this.col} rows"
+                }
+                createTensor(end - start, this.col) { i, j ->
+                    this[start + i, j]
+                }
+            }
         }
-        return createTensor(this.row, endCol - startCol) { i, j ->
-            this[i, startCol + j]
+    }
+
+    fun concat(other: Tensor, axis: Axis): Tensor {
+        return when (axis) {
+            Axis.VERTICAL -> {
+                require(this.row == other.row) {
+                    "Row dimensions must match for concatenation: ${this.row} != ${other.row}"
+                }
+                createTensor(this.row, this.col + other.col) { i, j ->
+                    if (j < this.col) this[i, j] else other[i, j - this.col]
+                }
+            }
+
+            Axis.HORIZONTAL -> {
+                require(this.col == other.col) {
+                    "Col dimensions must match for concatenation: ${this.col} != ${other.col}"
+                }
+                createTensor(this.row + other.row, this.col) { i, j ->
+                    if (i < this.row) this[i, j] else other[i - this.row, j]
+                }
+            }
         }
     }
 
