@@ -8,7 +8,11 @@ import hs.ml.model.nn.sequential.block.DecoderBlock
 import hs.ml.model.nn.sequential.block.EncoderBlock
 import hs.ml.model.nn.sequential.block.ManyToManyBlock
 
-open class EncoderDecoderBlock(val encoderBlock: EncoderBlock, val decoderBlock: DecoderBlock, override val divider: Int) : ManyToManyBlock, ColConcatInputLayer {
+open class EncoderDecoderBlock(
+    val encoderBlock: EncoderBlock,
+    val decoderBlock: DecoderBlock,
+    override val divider: Int
+) : ManyToManyBlock, ColConcatInputLayer {
     override fun forward(input: Node): Node {
         reset()
         val (source, targetInput) = split(input)
