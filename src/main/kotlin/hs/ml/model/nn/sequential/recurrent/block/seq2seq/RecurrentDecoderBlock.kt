@@ -19,15 +19,18 @@ open class RecurrentDecoderBlock(val recurrent: Recurrent) : DecoderBlock {
         val len = input.data.col / recurrent.inputSize
         val steps = input.split(len, Tensor.Axis.VERTICAL)
         var outputs: Node? = null
+        var currentInput = steps[0]
 
         for (t in 0 until len) {
-            val stepOutput = recurrent.forward(steps[t])
+            val stepOutput = recurrent.forward(currentInput)
 
             if (outputs == null) {
                 outputs = stepOutput
             } else {
                 outputs = outputs.concat(stepOutput, Tensor.Axis.VERTICAL)
             }
+
+            currentInput = stepOutput
         }
         return outputs ?: throw IllegalStateException("No output from decoder")
     }

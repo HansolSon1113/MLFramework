@@ -35,6 +35,7 @@ open class RecurrentAttentionDecoderBlock(val recurrent: Recurrent, val scorer: 
         val targetLength = targetInput.data.col / targetSize
         val targetSteps = targetInput.split(targetLength, Tensor.Axis.VERTICAL)
         var outputs: Node? = null
+        var currentStepInput = targetSteps[0]
 
         for (t in 0 until targetLength) {
             val stPrev = states.firstOrNull() ?: Node(TensorFactory.create(input.data.row, recurrent.hiddenSize, 0.0))
@@ -64,7 +65,7 @@ open class RecurrentAttentionDecoderBlock(val recurrent: Recurrent, val scorer: 
                 ct = if (ct == null) weightedH else ct + weightedH
             }
 
-            val decoderInput = targetSteps[t].concat(ct!!, Tensor.Axis.VERTICAL)
+            val decoderInput = currentStepInput.concat(ct!!, Tensor.Axis.VERTICAL)
             val stepOutput = recurrent.forward(decoderInput)
 
             if (outputs == null) {
@@ -72,6 +73,8 @@ open class RecurrentAttentionDecoderBlock(val recurrent: Recurrent, val scorer: 
             } else {
                 outputs = outputs.concat(stepOutput, Tensor.Axis.VERTICAL)
             }
+            
+            currentStepInput = stepOutput
         }
         return outputs ?: throw IllegalStateException("No output from decoder")
     }
